@@ -3,7 +3,6 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'ssh://git@bitbucket.ataccama.com:7999/g/rancher-catalog.git', branch: 'master'
                 checkout scm
             }
         }
