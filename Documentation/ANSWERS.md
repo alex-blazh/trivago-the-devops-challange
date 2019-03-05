@@ -1,4 +1,14 @@
-# Improvement proposition #
+# Answers #
+
+− How would you update a concrete artifactinside the web server layer?
+
+`After every commit to the repository Jenkins will rebuild docker image for web-app, push it to registry and upgrade the servies with new artifacts`
+
+− How would you assure HA for the whole application?
+
+`Now HA is realised only for web server layer by sciling it and distributing to several nodes. In case when some nodes or apps itsef will have some problems load balancer will send requests to working ones and wsarm will recreate desired amount of container on working nodes. To improve rellayability we need to set HA for load balancer itself and for datadase service also.`
+
+− How would you improve your solution? Mention next steps to be considered.
 
 ## Main application stack ##
 
@@ -21,14 +31,12 @@
 - Setup alarms with X-Pack or elastalert
 - Store config for all ELK services in one image with volumes
 
-## Monitoring ##
-
-- Add some monitoring stack like TIG, Prometheus or at least some bits from elastic
-
 ## CI/CD ##
 
 - Setup notification about filed/successful builds and deployments
 - Setup automated tests for new deployments
 - Add versioning to docker tags based on branch names and build numbers
 
+## Monitoring ##
 
+- Add some monitoring stack like TIG, Prometheus or at least some bits from elastic
