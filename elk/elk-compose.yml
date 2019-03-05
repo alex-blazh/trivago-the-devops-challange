@@ -1,0 +1,81 @@
+version: "3.1"
+
+services: 
+  elasticsearch:
+    image: quay.io/alex_blazh/trivago-the-devops-challenge-elasticsearch:6.6.1
+    networks:
+      - internal
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - LOGSPOUT=ignore
+      - xpack.security.enabled=false
+    volumes:
+    - /mnt/data/elasticsearch/data:/usr/share/elasticsearch/data
+    deploy:
+      restart_policy:
+        condition: any
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels.type == databases"
+      labels:
+        - "traefik.enable=false"
+
+  logstash:
+    image: quay.io/alex_blazh/trivago-the-devops-challenge-logstash:6.6.1
+    networks:
+      - internal
+    environment:
+      # ES_PASSWORD: changeme
+      LOGSPOUT: ignore
+      XPACK_MONITORING_ENABLED: 'false'
+
+  logspout:
+    image: quay.io/alex_blazh/trivago-the-devops-challenge-logspout:v3.2.6
+    networks:
+      - internal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/hostname:/etc/host_hostname:ro
+    environment:
+      LOGSPOUT: ignore
+      BACKLOG: "false"
+    command:
+      syslog+tcp://logstash:5000
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.20'
+          memory: 256M
+        reservations:
+          cpus: '0.10'
+          memory: 128M
+    depends_on:
+      - logstash 
+
+  kibana:
+    image: quay.io/alex_blazh/trivago-the-devops-challenge-kibana:6.6.1
+    ports:
+      - 5601:5601
+    environment:
+      LOGSPOUT: ignore
+      PACK_GRAPH_ENABLED: 'false'
+      XPACK_SECURITY_ENABLED: 'false'
+      NODE_OPTIONS: --max-old-space-size=850
+    deploy:
+      restart_policy:
+        condition: any
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels.type == frontend"
+      labels:
+        - "traefik.enable=false"
+
+networks:
+  internal:
+    driver: overlay
+    external: true

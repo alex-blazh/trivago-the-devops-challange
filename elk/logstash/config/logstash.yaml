@@ -1,0 +1,8 @@
+---
+pipeline:
+  batch:
+    size: 125
+    delay: 50
+
+log:
+  level: debug
